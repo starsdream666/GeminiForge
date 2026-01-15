@@ -23,6 +23,8 @@ env:
   ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
   SYNC_URL: ${{ secrets.SYNC_URL }}
   SYNC_KEY: ${{ secrets.SYNC_KEY }}
+  PROXY: ${{ secrets.PROXY }}
+  VLESS_CONFIG: ${{ secrets.VLESS_CONFIG }}
 
 jobs:
   register:
@@ -37,7 +39,16 @@ jobs:
         with:
           python-version: '3.11'
       
-      - name: 安装依赖
+      - name: 安装 sing-box (如果配置了VLESS)
+        if: ${{ env.VLESS_CONFIG != '' }}
+        run: |
+          echo "正在安装 sing-box..."
+          curl -Lo sing-box.tar.gz https://github.com/SagerNet/sing-box/releases/download/v1.8.0/sing-box-1.8.0-linux-amd64.tar.gz
+          tar -xzf sing-box.tar.gz
+          sudo mv sing-box-*/sing-box /usr/local/bin/
+          sing-box version
+      
+      - name: 安装 Python 依赖
         run: |
           pip install playwright requests
           playwright install chromium

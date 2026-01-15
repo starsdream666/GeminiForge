@@ -362,6 +362,23 @@ async def register_worker(worker_id: int, email_config: Dict) -> Optional[Dict]:
 
 
 async def main():
+    global PROXY  # 允许proxy_helper更新全局代理
+    
+    # 启动VLESS代理（如果配置了）
+    proxy_process = None
+    vless_config = os.environ.get('VLESS_CONFIG', '')
+    if vless_config:
+        try:
+            from proxy_helper import setup_proxy
+            logger.info("正在启动VLESS代理...")
+            proxy_process = setup_proxy()
+            if proxy_process:
+                # 更新全局PROXY变量
+                PROXY = os.environ.get('PROXY', '')
+                logger.info(f"VLESS代理已启动: {PROXY}")
+        except Exception as e:
+            logger.warning(f"VLESS代理启动失败: {e}")
+    
     # 从环境变量读取配置
     email_config = {
         'worker_domain': os.environ.get('WORKER_DOMAIN', ''),
