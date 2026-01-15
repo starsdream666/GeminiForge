@@ -81,15 +81,20 @@ class EmailManager:
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
         self.session.headers.update({'Connection': 'keep-alive'})
-        
-        # 设置代理
-        if PROXY:
-            self.session.proxies = {'http': PROXY, 'https': PROXY}
-            logger.info(f"EmailManager 使用代理: {PROXY[:30]}...")
+    
+    def _update_proxy(self):
+        """动态更新代理设置"""
+        proxy = os.environ.get('PROXY', '') or PROXY
+        if proxy and not self.session.proxies:
+            self.session.proxies = {'http': proxy, 'https': proxy}
+            logger.info(f"EmailManager 使用代理: {proxy[:30]}...")
     
     def create_email(self, max_retries: int = 3) -> tuple:
         """创建邮箱"""
         import string
+        
+        # 动态更新代理设置
+        self._update_proxy()
         
         letters1 = ''.join(random.choices(string.ascii_lowercase, k=4))
         numbers = ''.join(random.choices(string.digits, k=2))
@@ -117,6 +122,9 @@ class EmailManager:
     
     def check_verification_code(self, email: str, max_retries: int = 20) -> Optional[str]:
         """检查验证码"""
+        # 动态更新代理设置
+        self._update_proxy()
+        
         for i in range(max_retries):
             try:
                 url = f"https://{self.worker_domain}/admin/mails"
@@ -286,14 +294,17 @@ class CredentialSyncer:
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
         self.session.headers.update({'Connection': 'keep-alive'})
-        
-        # 设置代理
-        if PROXY:
-            self.session.proxies = {'http': PROXY, 'https': PROXY}
-            logger.info(f"CredentialSyncer 使用代理: {PROXY[:30]}...")
+    
+    def _update_proxy(self):
+        """动态更新代理设置"""
+        proxy = os.environ.get('PROXY', '') or PROXY
+        if proxy and not self.session.proxies:
+            self.session.proxies = {'http': proxy, 'https': proxy}
+            logger.info(f"CredentialSyncer 使用代理: {proxy[:30]}...")
     
     def _request(self, method: str, url: str, **kwargs):
         """带重试的请求"""
+        self._update_proxy()  # 动态更新代理
         for attempt in range(3):
             try:
                 return getattr(self.session, method)(url, timeout=30, **kwargs)
