@@ -132,3 +132,23 @@ A: 编辑 `.github/workflows/register.yml` 中的 `cron` 表达式。
 ## 📜 许可证
 
 MIT License
+
+---
+
+## 🙏 感谢
+
+本项目的实现参考了以下资源，特此感谢：
+
+### 注册机逻辑
+- GitHub: [xLmiler/test_band](https://github.com/xLmiler/test_band)
+- Linux.do: [相关讨论帖](https://linux.do/t/topic/1234455)
+
+### API 反代
+- Linux.do: [2API 反代教程](https://linux.do/t/topic/1225645)
+
+### Hugging Face 镜像
+- Linux.do: [HF 镜像部署](https://linux.do/t/topic/1226413)
+
+### 域名邮箱搭建
+- Linux.do: [域名邮箱教程](https://linux.do/t/topic/316819)
+- 官方文档: [Temp Mail Docs](https://temp-mail-docs.awsl.uk)
