@@ -26,8 +26,8 @@
 
 | Secret | 说明 | 示例 |
 |--------|------|------|
-| `WORKER_DOMAIN` | 邮箱 Worker 域名 | `email.example.com` |
-| `EMAIL_DOMAIN` | 邮箱域名 | `mail.example.com` |
+| `WORKER_DOMAIN` | 邮箱 Worker 域名（后端Worker） | `email.example.com` |
+| `EMAIL_DOMAIN` | 注册的邮箱域名 | `mail.example.com` |
 | `ADMIN_PASSWORD` | 邮箱管理密码 | `your_password` |
 | `SYNC_URL` | 同步 API 地址 | `https://xxx.hf.space` |
 | `SYNC_KEY` | 同步 API 密钥 | `your_api_key` |
