@@ -96,15 +96,16 @@ def generate_singbox_config(vless_config: dict) -> dict:
         "uuid": vless_config.get("uuid"),
     }
     
-    # 添加flow
-    if vless_config.get("flow"):
-        outbound["flow"] = vless_config["flow"]
+    # 添加flow (xtls-rprx-vision)
+    flow = vless_config.get("flow", "")
+    if flow:
+        outbound["flow"] = flow
     
     # TLS/Reality配置
     security = vless_config.get("security", "none")
     
     if security == "reality":
-        outbound["tls"] = {
+        tls_config = {
             "enabled": True,
             "server_name": vless_config.get("sni", ""),
             "utls": {
@@ -114,9 +115,14 @@ def generate_singbox_config(vless_config: dict) -> dict:
             "reality": {
                 "enabled": True,
                 "public_key": vless_config.get("pbk", ""),
-                "short_id": vless_config.get("sid", "")
             }
         }
+        # short_id 可能为空
+        sid = vless_config.get("sid", "")
+        if sid:
+            tls_config["reality"]["short_id"] = sid
+        outbound["tls"] = tls_config
+        
     elif security == "tls":
         outbound["tls"] = {
             "enabled": True,
@@ -126,6 +132,10 @@ def generate_singbox_config(vless_config: dict) -> dict:
                 "fingerprint": vless_config.get("fp", "chrome")
             }
         }
+    
+    # 打印outbound配置用于调试
+    import json
+    logger.info(f"Outbound配置: {json.dumps(outbound, indent=2)}")
     
     # 完整配置
     singbox_config = {

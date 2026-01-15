@@ -196,11 +196,15 @@ class GeminiRegistrar:
             async with async_playwright() as p:
                 # 配置浏览器代理
                 launch_args = {'headless': True}
-                if PROXY:
+                
+                # 从环境变量读取代理（VLESS启动后会设置）
+                browser_proxy = os.environ.get('PROXY', '') or PROXY
+                if browser_proxy:
                     # 解析代理地址
                     from urllib.parse import urlparse
-                    proxy_parsed = urlparse(PROXY)
-                    proxy_config = {'server': f"{proxy_parsed.scheme}://{proxy_parsed.hostname}:{proxy_parsed.port}"}
+                    proxy_parsed = urlparse(browser_proxy)
+                    # Playwright 需要的格式
+                    proxy_config = {'server': f"http://{proxy_parsed.hostname}:{proxy_parsed.port}"}
                     if proxy_parsed.username:
                         proxy_config['username'] = proxy_parsed.username
                         proxy_config['password'] = proxy_parsed.password or ''
