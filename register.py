@@ -11,6 +11,7 @@ Gemini Business 账号注册机 (GitHub Actions版)
   - SYNC_KEY: 同步API密钥
   - REGISTER_COUNT: 注册数量 (默认1)
   - CONCURRENT: 并发数 (默认1)
+  - PROXY: 代理地址 (可选，如 http://user:pass@host:port)
 """
 
 import os
@@ -35,6 +36,9 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+# 全局代理配置
+PROXY = os.environ.get('PROXY', '')
 
 
 @dataclass
@@ -77,6 +81,11 @@ class EmailManager:
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
         self.session.headers.update({'Connection': 'keep-alive'})
+        
+        # 设置代理
+        if PROXY:
+            self.session.proxies = {'http': PROXY, 'https': PROXY}
+            logger.info(f"EmailManager 使用代理: {PROXY[:30]}...")
     
     def create_email(self, max_retries: int = 3) -> tuple:
         """创建邮箱"""
@@ -172,7 +181,20 @@ class GeminiRegistrar:
             # 2. 启动浏览器
             logger.info("正在启动浏览器...")
             async with async_playwright() as p:
-                self.browser = await p.chromium.launch(headless=True)
+                # 配置浏览器代理
+                launch_args = {'headless': True}
+                if PROXY:
+                    # 解析代理地址
+                    from urllib.parse import urlparse
+                    proxy_parsed = urlparse(PROXY)
+                    proxy_config = {'server': f"{proxy_parsed.scheme}://{proxy_parsed.hostname}:{proxy_parsed.port}"}
+                    if proxy_parsed.username:
+                        proxy_config['username'] = proxy_parsed.username
+                        proxy_config['password'] = proxy_parsed.password or ''
+                    launch_args['proxy'] = proxy_config
+                    logger.info(f"浏览器使用代理: {proxy_parsed.hostname}:{proxy_parsed.port}")
+                
+                self.browser = await p.chromium.launch(**launch_args)
                 context = await self.browser.new_context(
                     user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
                     viewport={'width': 1920, 'height': 1080}
@@ -264,6 +286,11 @@ class CredentialSyncer:
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
         self.session.headers.update({'Connection': 'keep-alive'})
+        
+        # 设置代理
+        if PROXY:
+            self.session.proxies = {'http': PROXY, 'https': PROXY}
+            logger.info(f"CredentialSyncer 使用代理: {PROXY[:30]}...")
     
     def _request(self, method: str, url: str, **kwargs):
         """带重试的请求"""
